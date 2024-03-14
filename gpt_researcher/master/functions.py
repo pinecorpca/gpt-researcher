@@ -196,7 +196,7 @@ async def summarize_url(query, raw_data, agent_role_prompt, cfg):
 
 
 
-async def generate_report(query, context, agent_role_prompt, report_type, websocket, cfg):
+async def generate_report(query, context, agent_role_prompt, report_type, cfg, openai, assistant_id):
     """
     generates the final report
     Args:
@@ -214,17 +214,8 @@ async def generate_report(query, context, agent_role_prompt, report_type, websoc
     generate_prompt = get_report_by_type(report_type)
     report = ""
     try:
-        report = await create_chat_completion(
-            model=cfg.smart_llm_model,
-            messages=[
-                {"role": "system", "content": f"{agent_role_prompt}"},
-                {"role": "user", "content": f"{generate_prompt(query, context, cfg.report_format, cfg.total_words)}"}],
-            temperature=0,
-            llm_provider=cfg.llm_provider,
-            stream=True,
-            websocket=websocket,
-            max_tokens=cfg.smart_token_limit
-        )
+        message = generate_prompt(query, context, cfg.report_format, cfg.total_words)
+        report = await send_assistant_request(agent_role_prompt, message, assistant_id, openai)
     except Exception as e:
         print(f"{Fore.RED}Error in generate_report: {e}{Style.RESET_ALL}")
 

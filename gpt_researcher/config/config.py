@@ -28,6 +28,7 @@ class Config:
         self.max_iterations = int(os.getenv('MAX_ITERATIONS', 3))
         self.agent_role = os.getenv('AGENT_ROLE', None)
         self.scraper = os.getenv("SCRAPER", "bs")
+        self.assistant_id = os.getenv("OPENAI_ASSISTANT_ID", None)
 
         self.load_config_file()
 

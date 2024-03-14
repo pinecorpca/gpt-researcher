@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from fastapi import WebSocket
 from langchain.adapters import openai as lc_openai
+from langchain.agents.openai_assistant import OpenAIAssistantRunnable
 from colorama import Fore, Style
 from typing import Optional
 
@@ -65,6 +66,16 @@ async def send_chat_completion_request(
         return result["choices"][0]["message"]["content"]
     else:
         return await stream_response(model, messages, temperature, max_tokens, llm_provider, websocket)
+
+
+async def send_assistant_request(
+      agent_prompt, message, assistant_id, openai,
+):
+    assistant = OpenAIAssistantRunnable(
+        assistant_id=assistant_id,
+    )
+    output = assistant.invoke({'content': message, 'instructions': agent_prompt})
+    return output[0].content[0].text.value
 
 
 async def stream_response(model, messages, temperature, max_tokens, llm_provider, websocket=None):

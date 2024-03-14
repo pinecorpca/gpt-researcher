@@ -3,6 +3,7 @@ from gpt_researcher.config import Config
 from gpt_researcher.master.functions import *
 from gpt_researcher.context.compression import ContextCompressor
 from gpt_researcher.memory import Memory
+from openai import OpenAI
 
 
 class GPTResearcher:
@@ -29,6 +30,7 @@ class GPTResearcher:
         self.source_urls = source_urls
         self.memory = Memory(self.cfg.embedding_provider)
         self.visited_urls = set()
+        self.openai = OpenAI()
 
     async def run(self):
         """
@@ -53,7 +55,7 @@ class GPTResearcher:
         await stream_output("logs", f"✍️ Writing {self.report_type} for research task: {self.query}...", self.websocket)
         report = await generate_report(query=self.query, context=self.context,
                                        agent_role_prompt=self.role, report_type=self.report_type,
-                                       websocket=self.websocket, cfg=self.cfg)
+                                       cfg=self.cfg, openai=self.openai, assistant_id=self.cfg.assistant_id)
         time.sleep(2)
         return report
 
@@ -76,7 +78,7 @@ class GPTResearcher:
         """
         context = []
         # Generate Sub-Queries including original query
-        sub_queries = await get_sub_queries(query, self.role, self.cfg) + [query]
+        sub_queries = await get_sub_queries(query, self.role, self.cfg)# + [query]
         await stream_output("logs",
                             f"🧠 I will conduct my research based on the following queries: {sub_queries}...",
                             self.websocket)
